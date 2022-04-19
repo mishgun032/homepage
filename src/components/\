@@ -1,0 +1,93 @@
+import React, {PureComponent, useState} from 'react';
+import {MainContainer, RepoContainer, RepoHeader, CommitMessage, CommitInfo, Commit, CloneInp, CloneBody, Btn, Info} from './main.jsx'
+
+//<RepoCommits url={repo.commits_url} />
+class Main extends PureComponent {
+  constructor(props) {
+    super(props);
+    this.cache = {}
+  }
+  render() {
+    if(Object.keys(this.props.repos[0]).length < 5) {
+      return <div></div>
+    }
+    return (
+      <MainContainer>
+      {
+	this.props.repos.map( repo => {
+	  if ( this.props.showforked ? true : repo.fork !== true){
+	    const url = `https://api.github.com/repos/${this.props.nickname}/${repo.name}/commits`;
+	    console.log(url);
+	    return (
+	      <RepoContainer key={repo.id}>
+		<RepoHead  repo={repo} />
+		<RepoCommit></RepoCommit>
+	      </RepoContainer>
+	    )
+	  }
+	})
+      }
+      </MainContainer>
+    );
+  }
+}
+function RepoHead(props) {
+  return (
+    <RepoHeader>
+    <CloneRepo ssh={props.repo.ssh_url} https={props.repo.clone_url}></CloneRepo>
+    <a href={props.repo.html_url}>{props.repo.name}</a>
+    <Info>
+    </Info>
+    </RepoHeader>
+  )
+}
+
+function CloneRepo(props) {
+  const [copy, setCopy] = useState(props.ssh)
+
+  return (
+    <CloneBody>
+      <Btn onClick={() => setCopy(copy===props.ssh ? props.https : props.ssh) }>{copy===props.ssh ? "https" : "ssh"}?</Btn>
+     <CloneInp className='clone' readOnly value={copy} spellcheck="false"/>
+    </CloneBody>
+  )
+
+}
+
+function RepoCommit (prop){
+  const [st, setSt] = useState({
+    go: true,
+    commits: []
+  })
+  if(st.go){
+    fetch(prop.url) 
+      .then( response => response.json)
+      .then( commits => {
+	console.log('commits')
+	setSt({
+	  go: false,
+	  commits: [...commits]
+	})
+      })
+  }
+  return (
+    <div>
+    {
+      st.commits.map( commit => {
+	return (
+	  <Commit>
+	    <CommitMessage>
+	      f
+	    </CommitMessage>
+	    <CommitInfo>
+	      d	
+	    </CommitInfo>
+	  </Commit>
+	)
+      })
+    }
+      </div>
+  )
+}
+
+export default Main;
